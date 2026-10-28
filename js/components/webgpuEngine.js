@@ -117,7 +117,7 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
 
 export class WebGPUDiffusionEngine {
   constructor({ onStatusChange }) {
-    this.onStatusChange = onStatusChange || (() => {});
+    this.onStatusChange = onStatusChange || (() => { });
     this.device = null;
     this.adapter = null;
     this.adapterInfo = null;
@@ -167,7 +167,7 @@ export class WebGPUDiffusionEngine {
           } else if (adapter.requestAdapterInfo) {
             try {
               info = await adapter.requestAdapterInfo();
-            } catch (_) {}
+            } catch (_) { }
           }
           this.adapterInfo = info;
 
@@ -312,8 +312,8 @@ export class WebGPUDiffusionEngine {
     seed = null,
     width = 512,
     height = 512,
-    onStep = () => {},
-    onComplete = () => {}
+    onStep = () => { },
+    onComplete = () => { }
   }) {
     if (this.isGenerating) {
       throw new Error('Generation already in progress.');

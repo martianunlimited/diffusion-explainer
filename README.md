@@ -47,15 +47,14 @@ Explore the inner mechanics of Stable Diffusion step-by-step through pre-compute
 
 ### Mode 2: ⚡ Live WebGPU Studio (Run Custom Prompts in Browser)
 Generate images from **your own custom prompts** directly on your local GPU hardware via WebGPU:
-- **Custom Text & Negative Prompt Inputs:** Enter any arbitrary prompt with character count and quick inspiration chips.
-- **Direct WebGPU Hardware Acceleration:** Compiles WGSL compute shaders directly onto your GPU (`navigator.gpu`) for parallel latent denoising and VAE projection, with automatic CPU/SIMD fallback for unsupported browsers.
-- **Real-Time Step Streaming:** Watch the latent space and decoded RGB frame materialize dynamically across every single step ($t = N \dots 0$) on an interactive canvas.
-- **Semantic Prompt Tokenizer & Attention:** Automatically parses your custom prompt and computes interactive cross-attention chips you can click to see where words attend spatially.
+- **🧠 Real WebGPU Neural Network (Stability AI SD-Turbo ONNX):** Runs genuine deep learning model weights (~2.4 GB) directly inside the browser using ONNX Runtime Web and WebGPU. Model files (CLIP text encoder, 860M-parameter U-Net, and VAE decoder) are downloaded from Hugging Face and cached locally into your browser's **IndexedDB** for fast subsequent loads.
+- **🔗 Local / Cloud Server API Connection:** Connect directly to a local GPU rig (Automatic1111/SD.Next at `http://127.0.0.1:7860` or ComfyUI at `http://127.0.0.1:8188`) or Hugging Face Serverless Inference API for zero-download generation.
+- **📐 Educational Latent Math Simulator:** Lightweight 50ms mathematical visualization of reverse diffusion ODE/SDE curves and PCA latent space projections for instant exploration without downloading gigabytes of weights.
 - **Interactive Hyperparameter Tuning:**
-  - **Inference Steps:** $1\text{ to }25$ steps (with presets for fast distilled sampling vs high-fidelity).
-  - **Guidance Scale (CFG):** $1.0\text{ to }15.0$ slider.
+  - **Inference Steps:** 1–4 steps (SD-Turbo distilled) up to 25 steps.
+  - **Guidance Scale (CFG):** 0.0 to 15.0 slider.
   - **Seed Control:** Numeric input + randomize dice button 🎲.
-  - **Resolution:** $256\times 256$ (Ultra-fast preview) or $512\times 512$ (Standard SD).
+  - **Resolution:** $512\times 512$ (Standard SD) or $256\times 256$ preview.
 - **Session History Gallery:** Automatically saves every generated image to a session strip with 1-click PNG download, prompt copying, and "Send to Explainer" transfer.
 
 ---
