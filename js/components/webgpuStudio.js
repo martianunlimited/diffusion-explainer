@@ -444,7 +444,11 @@ export class WebGPUStudio {
           if (this.dom.progressBar) this.dom.progressBar.style.width = `${pct}%`;
 
           if (this.dom.liveStepStatus) {
-            this.dom.liveStepStatus.textContent = `Step ${stepInfo.currentStep}/${stepInfo.totalSteps} (t=${stepInfo.timestep})`;
+            if (stepInfo.currentStep === 0) {
+              this.dom.liveStepStatus.textContent = `Step 0/${stepInfo.totalSteps} (Initial Noise t=1000)`;
+            } else {
+              this.dom.liveStepStatus.textContent = `Step ${stepInfo.currentStep}/${stepInfo.totalSteps} (t=${stepInfo.timestep})`;
+            }
           }
           if (this.dom.liveLatencyStatus) {
             this.dom.liveLatencyStatus.textContent = `${Math.round(stepInfo.stepLatencyMs)}ms/step`;
@@ -453,14 +457,20 @@ export class WebGPUStudio {
             this.dom.floatingLatentStep.textContent = `t=${stepInfo.timestep}`;
           }
 
-          // Draw step frame onto main canvas
-          mainCtx.drawImage(stepInfo.frameCanvas, 0, 0, size, size);
+          // Draw current step decoded frame onto main canvas
+          if (stepInfo.frameCanvas) {
+            mainCtx.drawImage(stepInfo.frameCanvas, 0, 0, size, size);
+          }
 
-          // Draw PCA latent onto floating latent preview
-          latentCtx.drawImage(stepInfo.frameCanvas, 0, 0, 64, 64);
+          // Draw raw 64x64 latent PCA directly onto floating preview window
+          if (this.engine.latentCanvas) {
+            latentCtx.drawImage(this.engine.latentCanvas, 0, 0, 64, 64);
+          } else if (stepInfo.frameCanvas) {
+            latentCtx.drawImage(stepInfo.frameCanvas, 0, 0, 64, 64);
+          }
 
-          // Update tokens list if first step
-          if (stepInfo.currentStep === 1) {
+          // Initialize token attention chips as soon as prompt is tokenized
+          if (!this.tokenData && stepInfo.tokens) {
             this.tokenData = { tokens: stepInfo.tokens, hotspots: stepInfo.hotspots };
             this.renderTokenChips(stepInfo.tokens, stepInfo.hotspots);
           }
@@ -479,7 +489,9 @@ export class WebGPUStudio {
           this.addToHistory(result);
 
           if (this.dom.liveStepStatus) {
-            this.dom.liveStepStatus.textContent = `Completed in ${(result.totalTimeMs / 1000).toFixed(1)}s`;
+            const timeSec = (result.totalTimeMs / 1000).toFixed(1);
+            const backendName = result.backend === 'webgpu' ? '⚡ WebGPU' : '💻 CPU SIMD';
+            this.dom.liveStepStatus.textContent = `Completed (${backendName}) in ${timeSec}s`;
           }
         }
       });
