@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diffusion Explainer | Visualizing Stable Diffusion Step-by-Step in the Browser</title>
+  <meta name="description" content="Interactive browser-based visualization of Stable Diffusion. Step-by-step exploration of CLIP Text Tokenization, 4-Channel Latent Denoising with U-Net, Cross-Attention Heatmaps, Classifier-Free Guidance, and VAE Image Decoding. Zero backend required.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="app-header" id="main-header">
+    <div class="brand-section">
+      <div class="brand-icon">✨</div>
+      <div class="brand-titles">
+        <h1>Diffusion Explainer</h1>
+        <div class="brand-subtitle">Interactive Step-by-Step Visualization of Stable Diffusion • CLIP, U-Net & Latent Space</div>
+      </div>
+    </div>
+
+    <!-- Interactive Status & Capability Badges -->
+    <div class="header-badges">
+      <div class="badge-tag">⚡ 48× Latent Compression</div>
+      <div class="badge-tag-secondary badge-tag">🧬 860M Param U-Net</div>
+      <div class="badge-tag-secondary badge-tag">🌐 100% Client-Side</div>
+      <div class="badge-tag-secondary badge-tag">📦 GitHub Pages Ready</div>
+    </div>
+  </header>
+
+  <main class="app-main" id="main-content">
+
+    <!-- 3-Stage Macro Architecture Pipeline Banner -->
+    <nav class="pipeline-banner" aria-label="Stable Diffusion Pipeline Overview">
+      <div class="pipeline-step">
+        <span class="step-num">Stage 1</span>
+        <span class="step-title">Text Representation</span>
+        <span class="step-sub">CLIP Text Transformer (77×768)</span>
+      </div>
+      <div class="pipeline-arrow">➔</div>
+      <div class="pipeline-step active">
+        <span class="step-num">Stage 2</span>
+        <span class="step-title">Iterative Latent Denoising</span>
+        <span class="step-sub">U-Net & Scheduler (64×64×4)</span>
+      </div>
+      <div class="pipeline-arrow">➔</div>
+      <div class="pipeline-step">
+        <span class="step-num">Stage 3</span>
+        <span class="step-title">Image Upscaling</span>
+        <span class="step-sub">VAE Decoder (512×512×3 RGB)</span>
+      </div>
+    </nav>
+
+    <!-- Preset Prompt Selector Section -->
+    <section class="preset-selector-section" aria-label="Preset Prompts">
+      <div class="section-label">
+        <span>🎨</span> Select a Prompt Trajectory to Explore:
+      </div>
+      <div class="preset-cards-container" id="preset-cards-container">
+        <!-- Dynamically populated with preset cards -->
+      </div>
+    </section>
+
+    <!-- CLIP Text Tokenizer Card -->
+    <section class="tokenizer-card" id="tokenizer-card" aria-label="CLIP Text Tokenizer">
+      <div id="tokenizer-container">
+        <!-- Dynamically rendered by PromptTokenizer -->
+      </div>
+    </section>
+
+    <!-- Timestep Denoiser Scrubber & Playback Controls -->
+    <section class="denoiser-controller-card" id="denoiser-controller-card" aria-label="Timestep Scrubber">
+      <div class="denoiser-header">
+        <div class="denoiser-title">
+          <span>⏳</span>
+          <span id="step-label">Step 0 of 50</span>
+          <span style="font-weight:400; color:var(--text-muted); font-size:0.85rem;">(Diffusion Progression)</span>
+        </div>
+        <div class="denoiser-badges-row">
+          <span class="badge-metric badge-cyan" id="timestep-badge">Timestep t=1000</span>
+          <span class="badge-metric badge-magenta" id="noise-pct-badge">Noise: 100.0%</span>
+          <span class="badge-metric badge-cyan" id="signal-pct-badge">Signal: 0.0%</span>
+        </div>
+      </div>
+
+      <!-- Main Scrubber Range Slider -->
+      <div class="scrubber-main-row">
+        <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--accent-magenta); font-weight:700;">Noise (t=50)</span>
+        <input 
+          type="range" 
+          id="step-slider" 
+          min="0" 
+          max="50" 
+          value="50" 
+          step="1" 
+          class="styled-range" 
+          aria-label="Denoising Step Scrubber"
+        >
+        <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--accent-cyan); font-weight:700;">Clean (t=0)</span>
+      </div>
+
+      <!-- Action Buttons & Milestone Jump Pills -->
+      <div class="scrubber-actions">
+        <div class="scrubber-button-group">
+          <button class="btn-ctrl btn-primary" id="btn-play-pause" type="button">▶️ Play Denoising</button>
+          <button class="btn-ctrl" id="btn-step-prev" type="button" title="Step backward">+5 Noise</button>
+          <button class="btn-ctrl" id="btn-step-next" type="button" title="Step forward">-5 Denoise</button>
+          <button class="btn-ctrl" id="btn-reset" type="button" title="Reset to pure noise">↺ Reset</button>
+
+          <select class="styled-select" id="speed-select" aria-label="Playback Speed" style="margin-left:4px;">
+            <option value="200">0.5× Speed</option>
+            <option value="120" selected>1.0× Speed</option>
+            <option value="60">2.0× Speed</option>
+          </select>
+        </div>
+
+        <div class="milestones-row">
+          <span class="milestone-label">Jump:</span>
+          <button class="milestone-btn" data-step="50" type="button">t=50 (Noise)</button>
+          <button class="milestone-btn" data-step="40" type="button">t=40 (Contours)</button>
+          <button class="milestone-btn" data-step="25" type="button">t=25 (Shapes)</button>
+          <button class="milestone-btn" data-step="10" type="button">t=10 (Details)</button>
+          <button class="milestone-btn" data-step="0" type="button">t=0 (Final RGB)</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dual Visualizer Stage: Latent Space vs Decoded Image + Cross-Attention -->
+    <section class="dual-visualizer-grid" id="dual-visualizer-grid">
+
+      <!-- LEFT: 64×64×4 LATENT SPACE VISUALIZER -->
+      <article class="vis-card" id="vis-card-latent">
+        <div class="vis-card-header">
+          <h2 class="vis-title">
+            <span>🧬</span> 64×64×4 Latent Representation
+          </h2>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <select class="styled-select" id="latent-mode-select" aria-label="Latent Channel Mode">
+              <option value="pca" selected>PCA RGB Projection</option>
+              <option value="ch0">Channel 0 (Luminance z₀)</option>
+              <option value="ch1">Channel 1 (Pink/Green z₁)</option>
+              <option value="ch2">Channel 2 (Yellow/Blue z₂)</option>
+              <option value="ch3">Channel 3 (Edges/Texture z₃)</option>
+              <option value="grid">2×2 All Channels Matrix</option>
+            </select>
+
+            <select class="styled-select" id="colormap-select" aria-label="Colormap Selection">
+              <option value="turbo" selected>Turbo</option>
+              <option value="magma">Magma</option>
+              <option value="viridis">Viridis</option>
+              <option value="inferno">Inferno</option>
+              <option value="cyan">Neon Cyan</option>
+              <option value="gray">Grayscale</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="vis-canvas-viewport">
+          <canvas class="vis-canvas" id="latent-canvas" width="480" height="480" aria-label="64x64 Latent Representation Canvas"></canvas>
+        </div>
+
+        <div class="stats-grid-row" id="latent-stats">
+          <!-- Populated by LatentRenderer -->
+        </div>
+
+        <div class="hover-info-bar" id="latent-hover-readout">
+          Hover over the 64×64 latent canvas to inspect individual tensor values.
+        </div>
+      </article>
+
+      <!-- RIGHT: DECODED PIXEL IMAGE (512×512) & CROSS-ATTENTION OVERLAY -->
+      <article class="vis-card" id="vis-card-image">
+        <div class="vis-card-header">
+          <h2 class="vis-title">
+            <span>🖼️</span> Decoded Image & Cross-Attention
+          </h2>
+          <span class="card-badge" id="active-prompt-display" style="max-width:240px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            "Loading prompt..."
+          </span>
+        </div>
+
+        <div class="vis-canvas-viewport">
+          <img class="vis-image" id="main-decoded-image" src="" alt="Decoded Diffusion Milestone">
+          <canvas class="attention-overlay" id="attention-canvas-overlay" width="512" height="512" aria-label="Cross-Attention Spatial Overlay"></canvas>
+        </div>
+
+        <!-- Cross-Attention Controls Bar -->
+        <div class="attention-controls-bar">
+          <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+            <input type="checkbox" id="toggle-attention" checked>
+            <strong>Cross-Attention Heatmap</strong>
+          </label>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <label for="slider-att-alpha">Alpha:</label>
+            <input type="range" id="slider-att-alpha" min="0" max="1" step="0.05" value="0.55" style="width:70px; accent-color:var(--accent-cyan);">
+            <span id="alpha-val-display" style="font-family:var(--font-mono); font-size:0.75rem;">55%</span>
+          </div>
+        </div>
+
+        <div class="attention-stats-grid" id="attention-stats">
+          <!-- Populated by CrossAttentionManager -->
+        </div>
+      </article>
+
+    </section>
+
+    <!-- Advanced Architecture Stage: U-Net & Classifier-Free Guidance -->
+    <section class="advanced-tools-grid" id="advanced-tools-grid">
+
+      <!-- U-Net Interactive Backbone Diagram -->
+      <article class="unet-column" id="unet-diagram-container">
+        <!-- Rendered by UNetDiagram -->
+      </article>
+
+      <!-- Classifier-Free Guidance (CFG) Explorer -->
+      <article class="cfg-column" id="cfg-explorer-container">
+        <!-- Rendered by CFGExplorer -->
+      </article>
+
+    </section>
+
+    <!-- Noise Scheduler Chart & Latent vs Pixel Diffusion Comparison -->
+    <section class="theory-grid" id="theory-grid">
+
+      <!-- Interactive Noise Scheduler SVG Chart -->
+      <article class="scheduler-card">
+        <div class="vis-card-header">
+          <h3 class="vis-title">
+            <span>📈</span> Noise Scheduler Curves (Signal vs Noise)
+          </h3>
+          <span class="card-badge">Cosine Schedule</span>
+        </div>
+        <div id="scheduler-chart-container">
+          <!-- Rendered by SchedulerChart -->
+        </div>
+      </article>
+
+      <!-- Latent vs Pixel Diffusion Comparison Table -->
+      <article class="comparison-card">
+        <div class="vis-card-header">
+          <h3 class="vis-title">
+            <span>⚡</span> Why Latent Diffusion? (Compression Efficiency)
+          </h3>
+          <span class="card-badge">48× Factor</span>
+        </div>
+        <div class="comparison-table-wrap">
+          <table class="comp-table">
+            <thead>
+              <tr>
+                <th>Property</th>
+                <th>Pixel Diffusion (DDPM/Imagen)</th>
+                <th>Latent Diffusion (Stable Diffusion)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Operating Space</strong></td>
+                <td>Pixel Domain ($512 \times 512 \times 3$)</td>
+                <td class="comp-highlight">Latent Domain ($64 \times 64 \times 4$)</td>
+              </tr>
+              <tr>
+                <td><strong>Values per Step</strong></td>
+                <td>$786,432$ float32 numbers</td>
+                <td class="comp-highlight">$16,384$ float32 numbers (48× less)</td>
+              </tr>
+              <tr>
+                <td><strong>VRAM Required</strong></td>
+                <td>$\ge 24\text{ GB}$ (Datacenter GPU)</td>
+                <td class="comp-highlight">$4\text{–}8\text{ GB}$ (Consumer GPU / In-Browser)</td>
+              </tr>
+              <tr>
+                <td><strong>Perception vs Semantics</strong></td>
+                <td>Spends compute on imperceptible high-freq noise</td>
+                <td class="comp-highlight">Focuses compute on conceptual & semantic layout</td>
+              </tr>
+              <tr>
+                <td><strong>Decoder</strong></td>
+                <td>None (direct pixels)</td>
+                <td class="comp-highlight">VAE Decoder (runs once at final step)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+    </section>
+
+    <!-- Educational Deep Dive Guide Box -->
+    <section class="educational-guide" aria-label="Educational Guide">
+      <div class="guide-heading">💡 How Stable Diffusion Synthesizes High-Resolution Images from Noise</div>
+      <div class="guide-content">
+        <p>
+          <strong>1. Text Representation (CLIP):</strong> When you input a text prompt, the CLIP ViT-L/14 text encoder parses words into discrete tokens and maps each token into a 768-dimensional semantic embedding vector. These token vectors serve as the continuous semantic compass guiding image synthesis.
+        </p>
+        <br>
+        <p>
+          <strong>2. The Latent Space ($64 \times 64 \times 4$):</strong> Rather than manipulating millions of pixel values directly (which is computationally prohibitive), Stable Diffusion operates inside a compressed 4-channel latent space trained via an autoencoder (VAE). The 4 channels capture low-frequency luminance, chromatic axes, and edge textures with a 48× reduction in total dimensions.
+        </p>
+        <br>
+        <p>
+          <strong>3. U-Net & Cross-Attention:</strong> Across 50 denoising timesteps ($t = 1000 \to 0$), the 860M parameter U-Net predicts the precise Gaussian noise vector $\epsilon_\theta$ contained in the latent. Inside each spatial transformer block, <em>Cross-Attention</em> correlates spatial image query vectors ($Q$) with text key/value vectors ($K, V$), ensuring features like "astronaut helmet" or "neon lights" coalesce in the designated spatial regions.
+        </p>
+        <br>
+        <p>
+          <strong>4. Classifier-Free Guidance (CFG):</strong> To strictly enforce prompt adherence without degrading image quality, the model evaluates two noise estimates per step: one with your text prompt and one without (unconditional). Multiplying the difference vector by the guidance scale $s$ (typically $7.0\text{–}8.5$) amplifies semantic details while preserving realistic visual coherence.
+        </p>
+        <br>
+        <p>
+          <strong>5. VAE Image Decoding:</strong> Once the latent representation is completely denoised at $t=0$, it is passed through the VAE Decoder only once, expanding the $64 \times 64 \times 4$ latent array into a crisp, high-resolution $512 \times 512 \times 3$ RGB image.
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Application Footer -->
+  <footer class="app-footer">
+    <div>
+      <strong>Diffusion Explainer</strong> • Inspired by Polo Club of Data Science at Georgia Tech & IBM Research.
+    </div>
+    <div>
+      Pure client-side HTML5/ES6 • Hosted on <a href="https://pages.github.com/" target="_blank" rel="noopener noreferrer">GitHub Pages</a>
+    </div>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
