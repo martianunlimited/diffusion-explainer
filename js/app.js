@@ -12,6 +12,7 @@ import { CrossAttentionManager } from './components/crossAttention.js';
 import { SchedulerChart } from './components/schedulerChart.js';
 import { CFGExplorer } from './components/cfgExplorer.js';
 import { UNetDiagram } from './components/unetDiagram.js';
+import { WebGPUStudio } from './components/webgpuStudio.js';
 import { COLORMAPS } from './utils/colormaps.js';
 import { getScheduleParams } from './utils/math.js';
 
@@ -39,7 +40,7 @@ class DiffusionExplainerApp {
 
   async init() {
     this.cacheDOMElements();
-    this.initSubcomponents();
+    await this.initSubcomponents();
     this.bindEvents();
 
     // Preload current preset trajectory images
@@ -51,6 +52,13 @@ class DiffusionExplainerApp {
 
   cacheDOMElements() {
     this.dom = {
+      // Main Application Tabs
+      tabBtnExplainer: document.getElementById('tab-btn-explainer'),
+      tabBtnWebgpu: document.getElementById('tab-btn-webgpu'),
+      viewExplainer: document.getElementById('view-explainer'),
+      viewWebgpu: document.getElementById('view-webgpu'),
+
+      // Explainer Elements
       presetCardsContainer: document.getElementById('preset-cards-container'),
       activePromptDisplay: document.getElementById('active-prompt-display'),
       mainDecodedImage: document.getElementById('main-decoded-image'),
@@ -72,7 +80,7 @@ class DiffusionExplainerApp {
     };
   }
 
-  initSubcomponents() {
+  async initSubcomponents() {
     // 1. Text Tokenizer
     this.tokenizer = new PromptTokenizer({
       containerId: 'tokenizer-container',
@@ -116,9 +124,45 @@ class DiffusionExplainerApp {
     this.unetDiagram = new UNetDiagram({
       containerId: 'unet-diagram-container'
     });
+
+    // 7. Live WebGPU Studio Tab
+    this.webgpuStudio = new WebGPUStudio({
+      containerId: 'webgpu-studio-container',
+      onInspectInExplainer: () => {
+        this.switchTab('explainer');
+      }
+    });
+    await this.webgpuStudio.init();
+  }
+
+  switchTab(tabName) {
+    if (tabName === 'explainer') {
+      if (this.dom.tabBtnExplainer) this.dom.tabBtnExplainer.classList.add('active');
+      if (this.dom.tabBtnWebgpu) this.dom.tabBtnWebgpu.classList.remove('active');
+      if (this.dom.viewExplainer) this.dom.viewExplainer.classList.remove('hidden');
+      if (this.dom.viewWebgpu) this.dom.viewWebgpu.classList.add('hidden');
+    } else if (tabName === 'webgpu') {
+      if (this.dom.tabBtnWebgpu) this.dom.tabBtnWebgpu.classList.add('active');
+      if (this.dom.tabBtnExplainer) this.dom.tabBtnExplainer.classList.remove('active');
+      if (this.dom.viewWebgpu) this.dom.viewWebgpu.classList.remove('hidden');
+      if (this.dom.viewExplainer) this.dom.viewExplainer.classList.add('hidden');
+    }
   }
 
   bindEvents() {
+    // Navigation Tabs Switching (Explainer vs WebGPU Studio)
+    if (this.dom.tabBtnExplainer) {
+      this.dom.tabBtnExplainer.addEventListener('click', () => {
+        this.switchTab('explainer');
+      });
+    }
+
+    if (this.dom.tabBtnWebgpu) {
+      this.dom.tabBtnWebgpu.addEventListener('click', () => {
+        this.switchTab('webgpu');
+      });
+    }
+
     // Timestep Scrubber Slider
     if (this.dom.stepSlider) {
       this.dom.stepSlider.addEventListener('input', (e) => {

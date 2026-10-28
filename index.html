@@ -7,6 +7,8 @@
   <meta name="description" content="Interactive browser-based visualization of Stable Diffusion. Step-by-step exploration of CLIP Text Tokenization, 4-Channel Latent Denoising with U-Net, Cross-Attention Heatmaps, Classifier-Free Guidance, and VAE Image Decoding. Zero backend required.">
   <link rel="stylesheet" href="css/style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
+  <!-- ONNX Runtime Web (WebGPU & WebAssembly) -->
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.all.min.js"></script>
 </head>
 <body>
 
@@ -31,7 +33,24 @@
 
   <main class="app-main" id="main-content">
 
-    <!-- 3-Stage Macro Architecture Pipeline Banner -->
+    <!-- Top Application Navigation Tabs -->
+    <nav class="main-tabs-nav" aria-label="Application Modes">
+      <button class="nav-tab active" id="tab-btn-explainer" type="button">
+        <span class="tab-icon">📖</span>
+        <span>Interactive Explainer</span>
+        <span class="tab-badge-sub">Step-by-Step Architecture</span>
+      </button>
+      <button class="nav-tab" id="tab-btn-webgpu" type="button">
+        <span class="tab-icon">⚡</span>
+        <span>Live WebGPU Studio</span>
+        <span class="tab-badge-glow">Run Custom Prompt</span>
+      </button>
+    </nav>
+
+    <!-- VIEW 1: INTERACTIVE EXPLAINER (PRESETS, ARCHITECTURE, CFG) -->
+    <section class="view-panel" id="view-explainer">
+
+      <!-- 3-Stage Macro Architecture Pipeline Banner -->
     <nav class="pipeline-banner" aria-label="Stable Diffusion Pipeline Overview">
       <div class="pipeline-step">
         <span class="step-num">Stage 1</span>
@@ -309,6 +328,15 @@
         <p>
           <strong>5. VAE Image Decoding:</strong> Once the latent representation is completely denoised at $t=0$, it is passed through the VAE Decoder only once, expanding the $64 \times 64 \times 4$ latent array into a crisp, high-resolution $512 \times 512 \times 3$ RGB image.
         </p>
+      </div>
+    </section>
+
+    </section> <!-- /view-explainer -->
+
+    <!-- VIEW 2: LIVE WEBGPU STUDIO (CUSTOM PROMPT GENERATION) -->
+    <section class="view-panel hidden" id="view-webgpu">
+      <div id="webgpu-studio-container">
+        <!-- Rendered by WebGPUStudio -->
       </div>
     </section>
 

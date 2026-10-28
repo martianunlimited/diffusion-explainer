@@ -29,49 +29,36 @@ Diffusion Explainer breaks down the mathematical and architectural mechanics of 
 
 ---
 
-## 🔬 Interactive Features
+## 🔬 Dual Interactive Modes
 
-### 1. Interactive Timestep Scrubber ($t = 50 \to 0$)
-- Fluid slider allowing bidirectional scrubbing from pure random noise ($t=50$) through rough silhouettes ($t=35$), clear structures ($t=20$), sharp details ($t=10$), down to final clean RGB output ($t=0$).
-- Play/Pause animation engine with $0.5\times$, $1.0\times$, and $2.0\times$ speed controls.
-- Keyboard shortcuts: `Space` (Play/Pause), `ArrowLeft`/`ArrowRight` (Step $\pm 1$), `Home` ($t=50$), `End` ($t=0$).
+The application features two complete, seamlessly switchable modes:
 
-### 2. 64×64×4 Latent Space Representation
-- **PCA RGB Projection:** Converts 4-channel latent vectors into a vibrant 3-channel color representation using the standard Stable Diffusion PCA projection matrix.
-- **Individual Channel Inspector:** View individual latent dimensions:
-  - **Channel 0 ($z_0$):** Low-frequency luminance and global brightness.
-  - **Channel 1 ($z_1$):** Pink/Green chromatic axis.
-  - **Channel 2 ($z_2$):** Blue/Yellow chromatic axis.
-  - **Channel 3 ($z_3$):** High-frequency fine textures and edge transitions.
-- **2×2 Channel Matrix:** View all 4 latent channels side-by-side.
-- **Colormaps:** Switch between *Turbo*, *Magma*, *Viridis*, *Inferno*, *Electric Cyan*, and *Grayscale*.
-- **Live Tensor Statistics:** Mean ($\mu$), Standard Deviation ($\sigma$), Min/Max, and real-time hover inspection showing exact $(x, y, z_0, z_1, z_2, z_3)$ coordinates.
+### Mode 1: 📖 Interactive Explainer
+Explore the inner mechanics of Stable Diffusion step-by-step through pre-computed multi-step trajectories across diverse prompts:
+- **Interactive Timestep Scrubber ($t = 50 \to 0$):** Fluid bidirectional scrubbing, play/pause animation ($0.5\times, 1.0\times, 2.0\times$), milestone jumps.
+- **64×64×4 Latent Space Inspector:** PCA RGB projection, individual channel views ($z_0 \dots z_3$), $2\times 2$ grid matrix, colormaps, tensor statistics, and hover $(x, y)$ coordinate inspection.
+- **Cross-Attention Heatmaps:** Click any prompt token to overlay its spatial attention heatmap onto the evolving image.
+- **U-Net Architecture Diagram (860M Params):** Interactive SVG diagram with clickable blocks and skip connections.
+- **Classifier-Free Guidance (CFG) Vector Explorer:** Interactive vector math diagram demonstrating conditional vs. unconditional noise scaling.
+- **Noise Scheduler Curves:** SVG plot of Signal ($\bar{\alpha}_t$), Noise ($\sigma_t$), and SNR (dB).
+- **Latent vs. Pixel Diffusion Comparison:** Detailed breakdown of the $48\times$ computational compression.
 
-### 3. Cross-Attention Spatial Heatmap Explorer
-- Click any prompt token (e.g., `"astronaut"`, `"helmet"`, `"red panda"`, `"waterfalls"`, `"neon"`, `"mountain"`) to inspect the spatial Cross-Attention Heatmap overlaid on the image and latents.
-- Shows centroid coordinates, attention density, and spatial receptive coverage.
-- Adjustable overlay alpha opacity slider.
+---
 
-### 4. Interactive U-Net Architecture Diagram (860M Parameters)
-- Interactive SVG diagram illustrating the U-Net backbone:
-  - Downsampling Blocks (ResNet + Cross-Attention)
-  - Middle Bottleneck Block (ResNet + Self-Attention + Cross-Attention)
-  - Upsampling Blocks + Skip Connections
-  - Timestep Conditioning ($\mathbf{t}$-embedding) and Text Conditioning (CLIP $\mathbf{c}$)
-- Click any block to view its tensor shapes, input/output channels, and architectural role.
+### Mode 2: ⚡ Live WebGPU Studio (Run Custom Prompts in Browser)
+Generate images from **your own custom prompts** directly on your local GPU hardware via WebGPU:
+- **Custom Text & Negative Prompt Inputs:** Enter any arbitrary prompt with character count and quick inspiration chips.
+- **Direct WebGPU Hardware Acceleration:** Compiles WGSL compute shaders directly onto your GPU (`navigator.gpu`) for parallel latent denoising and VAE projection, with automatic CPU/SIMD fallback for unsupported browsers.
+- **Real-Time Step Streaming:** Watch the latent space and decoded RGB frame materialize dynamically across every single step ($t = N \dots 0$) on an interactive canvas.
+- **Semantic Prompt Tokenizer & Attention:** Automatically parses your custom prompt and computes interactive cross-attention chips you can click to see where words attend spatially.
+- **Interactive Hyperparameter Tuning:**
+  - **Inference Steps:** $1\text{ to }25$ steps (with presets for fast distilled sampling vs high-fidelity).
+  - **Guidance Scale (CFG):** $1.0\text{ to }15.0$ slider.
+  - **Seed Control:** Numeric input + randomize dice button 🎲.
+  - **Resolution:** $256\times 256$ (Ultra-fast preview) or $512\times 512$ (Standard SD).
+- **Session History Gallery:** Automatically saves every generated image to a session strip with 1-click PNG download, prompt copying, and "Send to Explainer" transfer.
 
-### 5. Classifier-Free Guidance (CFG) Explorer
-- Interactive guidance scale slider ($s \in [1.0, 20.0]$).
-- 2D vector graphic demonstrating:
-  $$\tilde{\boldsymbol{\epsilon}} = \boldsymbol{\epsilon}_{\text{uncond}} + s \cdot (\boldsymbol{\epsilon}_{\text{cond}} - \boldsymbol{\epsilon}_{\text{uncond}})$$
-- Live assessments of under-conditioned ($s \le 3$), optimal ($s = 7\text{–}8.5$), and over-saturated ($s \ge 15$) guidance regimes.
-
-### 6. Noise Scheduler Curves (Signal vs. Noise)
-- Real-time SVG chart plotting Signal retention ($\bar{\alpha}_t$), Noise retention ($\sigma_t$), and Signal-to-Noise Ratio (SNR in dB).
-- Synchronized tracking cursor and click-to-seek functionality.
-
-### 7. Latent vs. Pixel Diffusion Comparison
-- Comparative metrics explaining why Latent Diffusion achieves $48\times$ compression efficiency over older pixel-space diffusion models (e.g. DDPM, Imagen).
+---
 
 ---
 
